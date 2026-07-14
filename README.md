@@ -1,56 +1,104 @@
-# Welcome to your Expo app 👋
+# Musio — Music Streaming App Clone
+### Expo SDK 56 · Expo Router · React Native StyleSheet (no NativeWind/Tailwind)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A fully serverless, offline-mock music streaming app: Home, Explore, Library,
+and Upgrade tabs, a persistent global mini-player, a full-screen Now Playing
+modal (Up Next / Lyrics / Related), and a live search experience — all driven
+by a single local `data/mockData.js` file.
 
-## Get started
+---
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## 1. Create the project
 
 ```bash
-npm run reset-project
+npx create-expo-app@latest musio --template blank
+cd musio
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Copy every file from this package into the new project root (overwriting
+`App.js`/`app.json` — this project uses `expo-router`, so there is no
+`App.js` entry file; `app/_layout.js` is the root).
 
-### Other setup steps
+## 2. Install dependencies (Expo SDK 56 compliant)
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```bash
+npx expo install expo-router expo-av expo-status-bar expo-constants expo-linking expo-splash-screen
+npx expo install react-native-gesture-handler react-native-reanimated react-native-safe-area-context react-native-screens
+npm install @expo/vector-icons
+```
 
-## Learn more
+Then let Expo resolve every package to the exact patch version compatible
+with SDK 56:
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npx expo install --fix
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 3. Babel config
 
-## Join the community
+Confirm `babel.config.js` matches the one provided (registers
+`babel-preset-expo` + the Reanimated plugin, which must be listed last).
 
-Join our community of developers creating universal apps.
+## 4. Entry point
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+`package.json` already points `"main"` at `"expo-router/entry"` — no manual
+`App.js` registration needed.
+
+## 5. Run
+
+```bash
+npx expo start
+```
+
+---
+
+## File structure
+
+```
+musio/
+├── app.json
+├── babel.config.js
+├── package.json
+├── app/
+│   ├── _layout.js              # Root stack: tabs + player/search modals
+│   ├── player.js                # Full-screen Now Playing modal
+│   ├── search.js                # Search modal
+│   └── (tabs)/
+│       ├── _layout.js           # Bottom tabs + persistent MiniPlayer
+│       ├── index.js             # Home
+│       ├── explore.js           # Explore
+│       ├── library.js           # Library
+│       └── upgrade.js           # Upgrade / Premium (static)
+├── components/
+│   ├── AlbumCard.js
+│   ├── MarqueeText.js
+│   ├── MiniPlayer.js
+│   ├── PillFilters.js
+│   ├── ProgressSlider.js
+│   ├── SectionHeader.js
+│   └── TrackRow.js
+├── context/
+│   └── MusicPlayerContext.js    # Global playback state (Context + hooks)
+├── constants/
+│   └── theme.js                 # Colors, spacing, radii, type scale
+└── data/
+    └── mockData.js               # Songs, albums, artists, playlists, charts,
+                                    # moods, lyrics, recent searches
+```
+
+## Notes on playback
+
+`MusicPlayerContext` is wired to `expo-av`'s `Audio.Sound`. Because the mock
+dataset ships without bundled audio files (`audioUrl: null`), the context
+falls back to a local timer that advances `playbackProgress` so the whole UI
+(mini-player progress bar, full-screen seek bar, Up Next auto-advance) is
+fully interactive out of the box. Drop a real hosted URL or `require()`
+asset into any track's `audioUrl` field in `data/mockData.js` and the
+context will automatically play real audio through `expo-av` instead.
+
+## Design reference
+
+Layout, spacing, and card proportions follow the attached reference
+screenshots — white background, bold black type, colorful square artwork,
+pill-style filter chips, and a black circular play/pause button with a
+draggable progress scrubber on the full-screen player.
