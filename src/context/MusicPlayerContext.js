@@ -40,7 +40,7 @@ export function MusicPlayerProvider({ children }) {
     setAudioModeAsync({
       playsInSilentMode: true,
       shouldPlayInBackground: true,
-      interruptionMode: "duck",
+      interruptionMode: "duckOthers",
     });
 
     return () => {
